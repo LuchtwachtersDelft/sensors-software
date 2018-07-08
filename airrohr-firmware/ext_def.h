@@ -2,7 +2,7 @@
 #define CURRENT_LANG INTL_LANG
 
 // Wifi config
-#define WLANSSID "Freifunk-disabled"
+#define WLANSSID "WiFi-instellen"
 #define WLANPWD ""
 
 // BasicAuth config
@@ -154,7 +154,7 @@
 #define USE_BETA 0
 
 // OLED Display SSD1306 angeschlossen?
-#define HAS_DISPLAY 0
+#define HAS_DISPLAY 1
 
 // LCD Display LCD1602 angeschlossen?
 #define HAS_LCD1602 0
@@ -166,7 +166,7 @@
 #define HAS_LCD2004_27 0
 
 // Wieviele Informationen sollen über die serielle Schnittstelle ausgegeben werden?
-#define DEBUG 3
+#define DEBUG 4
 
 // Definition der Debuglevel
 #define DEBUG_ERROR 1
