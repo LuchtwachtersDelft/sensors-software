@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#define INTL_DE
+#define INTL_NL
 
 /************************************************************************
 /*                                                                      *
@@ -1457,7 +1457,7 @@ void webserver_config() {
 		page_content += F("<br/>senseBox-ID ");
 		page_content += senseboxid;
 		page_content += F("<br/><br/>");
-    page_content += line_from_value(FPSTR(INTL_AN_EIGENE_API_SENDEN), String(send2custom));		
+		page_content += line_from_value(FPSTR(INTL_AN_EIGENE_API_SENDEN), String(send2custom));		
 		page_content += line_from_value(FPSTR(INTL_SERVER), host_custom);
 		page_content += line_from_value(FPSTR(INTL_PFAD), url_custom);
 		page_content += line_from_value(FPSTR(INTL_PORT), String(port_custom));
