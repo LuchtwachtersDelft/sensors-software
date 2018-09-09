@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #define INTL_DE
 
 /************************************************************************
@@ -105,6 +104,7 @@
 #include <ESP8266WiFi.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
+#include <WiFiManager.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ESP8266httpUpdate.h>
@@ -774,7 +774,7 @@ void copyExtDef() {
 	strcpyDef(fs_ssid, FS_SSID);
 	strcpyDef(fs_pwd, FS_PWD);
 	if (strcmp(fs_ssid, "") == 0) {
-		strcpy(fs_ssid, "Feinstaubsensor-");
+		strcpy(fs_ssid, FS_SSID_PREFIX);
 		strcat(fs_ssid, esp_chipid.c_str());
 	}
 	setDef(www_basicauth_enabled, WWW_BASICAUTH_ENABLED);
@@ -1493,7 +1493,7 @@ void webserver_wifi() {
 		page_content += FPSTR(INTL_NETZWERKE_GEFUNDEN);
 		page_content += String(n);
 		page_content += F("<br/>");
-		int indices[n];
+		int* indices = new int[n];
 		debug_out(F("output config page 2"), DEBUG_MIN_INFO, 1);
 		for (int i = 0; i < n; i++) {
 			indices[i] = i;
@@ -1528,7 +1528,8 @@ void webserver_wifi() {
 			page_content += wlan_ssid_to_table_row(WiFi.SSID(indices[i]), ((WiFi.encryptionType(indices[i]) == ENC_TYPE_NONE) ? " " : "*"), WiFi.RSSI(indices[i]));
 		}
 		page_content += F("</table><br/><br/>");
-	}
+		delete[] indices;
+	}	
 	server.send(200, FPSTR(TXT_CONTENT_TYPE_TEXT_HTML), page_content);
 }
 
@@ -1861,6 +1862,43 @@ void setup_webserver() {
 }
 
 /*****************************************************************
+/* Entered AP config mode                                        *
+/*****************************************************************/
+void configModeCallback(WiFiManager *myWiFiManager) {
+	Serial.println("Starting access point");
+	Serial.println(WiFi.softAPIP());
+	display_debug(F("Access Point SSID: "), fs_ssid);
+}
+
+/*****************************************************************
+/* WifiManager                                                   *
+/*****************************************************************/
+void startWifiManager() {
+	WiFiManager wifiManager;
+
+	wifiManager.setAPCallback(configModeCallback);
+
+	debug_out(F("Starting WiFiManager"), DEBUG_MIN_INFO, 1);
+	debug_out(F("AP ID: "), DEBUG_MIN_INFO, 0);
+	debug_out(fs_ssid, DEBUG_MIN_INFO, 1);
+	debug_out(F("Password: "), DEBUG_MIN_INFO, 0);
+	debug_out(fs_pwd, DEBUG_MIN_INFO, 1);
+
+	if (!wifiManager.autoConnect(fs_ssid, fs_pwd)) {
+		Serial.println("failed to connect and hit timeout");
+		delay(3000);
+		//reset and try again, or maybe put it to deep sleep
+		ESP.reset();
+		delay(5000);
+	}
+
+	Serial.println("Succesfully connected with WLAN");
+	Serial.println("Local IP:");
+	Serial.println(WiFi.localIP());
+	display_debug(F("Client IP:"), String(WiFi.localIP()));
+}
+
+/*****************************************************************
 /* WifiConfig                                                    *
 /*****************************************************************/
 void wifiConfig() {
@@ -1970,39 +2008,9 @@ void wifiConfig() {
 /* WiFi auto connecting script                                   *
 /*****************************************************************/
 void connectWifi() {
-	int retry_count = 0;
-	String s1 = String(fs_ssid);
-	String s2 = String(fs_ssid);
-	debug_out(String(WiFi.status()), DEBUG_MIN_INFO, 1);
-	WiFi.disconnect();
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(wlanssid, wlanpwd); // Start WiFI
-
-	debug_out(F("Connecting to "), DEBUG_MIN_INFO, 0);
-	debug_out(wlanssid, DEBUG_MIN_INFO, 1);
-
-	while ((WiFi.status() != WL_CONNECTED) && (retry_count < 40)) {
-		delay(500);
-		debug_out(".", DEBUG_MIN_INFO, 0);
-		retry_count++;
-	}
-	debug_out("", DEBUG_MIN_INFO, 1);
-	if (WiFi.status() != WL_CONNECTED) {
-		s1 = s1.substring(0, 16);
-		s2 = s2.substring(16);
-		display_debug(s1, s2);
-		wifiConfig();
-		if (WiFi.status() != WL_CONNECTED) {
-			retry_count = 0;
-			while ((WiFi.status() != WL_CONNECTED) && (retry_count < 20) && !restart_needed) {
-				delay(500);
-				debug_out(".", DEBUG_MIN_INFO, 0);
-				retry_count++;
-			}
-			debug_out("", DEBUG_MIN_INFO, 1);
-		}
-	}
-	WiFi.softAPdisconnect(true);
+	
+		startWifiManager();
+	
 	debug_out(F("WiFi connected\nIP address: "), DEBUG_MIN_INFO, 0);
 	debug_out(IPAddress2String(WiFi.localIP()), DEBUG_MIN_INFO, 1);
 }
@@ -3443,10 +3451,10 @@ void setup() {
 	copyExtDef();
 	readConfig();
 	init_display();
-	init_lcd();
-	setup_webserver();
+	init_lcd();	
 	display_debug(F("Connecting to"), String(wlanssid));
 	connectWifi();						// Start ConnectWifi
+	setup_webserver();
 	if (restart_needed) {
 		display_debug(F("Writing config"), F("and restarting"));
 		writeConfig();

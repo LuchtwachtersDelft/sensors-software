@@ -11,8 +11,9 @@
 #define WWW_BASICAUTH_ENABLED 0
 
 // Sensor Wifi config (config mode)
+#define FS_SSID_PREFIX "PMSensor-" //"Feinstaubsensor-"
 #define FS_SSID ""
-#define FS_PWD ""
+#define FS_PWD "particle"
 
 // Wohin gehen die Daten?
 #define SEND2DUSTI 1
@@ -137,7 +138,7 @@
 #define USE_BETA 0
 
 // OLED Display SSD1306 angeschlossen?
-#define HAS_DISPLAY 0
+#define HAS_DISPLAY 1
 
 // OLED Display SH1106 angeschlossen?
 #define HAS_SH1106 0
