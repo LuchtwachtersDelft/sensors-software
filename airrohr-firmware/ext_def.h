@@ -1,6 +1,8 @@
 // Language config
 #define CURRENT_LANG INTL_LANG
 
+#define ALWAYS_SHOW_FULL_CONFIG_PAGE 0
+
 // Wifi config
 #define WLANSSID "Freifunk-disabled"
 #define WLANPWD ""
