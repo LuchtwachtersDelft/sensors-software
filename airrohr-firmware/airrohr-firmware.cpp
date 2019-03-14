@@ -1296,8 +1296,14 @@ void webserver_root() {
 		page_content += FPSTR(WEB_ROOT_PAGE_CONTENT);
 		page_content.replace("{t}", FPSTR(INTL_CURRENT_DATA));
 		page_content.replace(F("{map}"), FPSTR(INTL_ACTIVE_SENSORS_MAP));
-		page_content.replace(F("{graph}"), FPSTR(INTL_GRAPH));
+		page_content.replace(F("{graph}"), FPSTR(INTL_GRAPH));		
 		page_content.replace(F("{sensorID}"), esp_chipid);
+		if (cfg::senseboxid != empty) {
+			"https://opensensemap.org/explore/" + cfg::senseboxid
+		} else {
+			"/config#opensensemap"
+		}
+		page_content.replace(F("{senseboxLink}"), ); // TODO only show link if senseboxid is set
 		if (PPD_READ) page_content.replace(F("{PMsensor}"), F("ppd42ns")); // D5 D6
 		if (SDS_READ) page_content.replace(F("{PMsensor}"), F("sds011")); // D1 D2
 		if (PMS_READ) page_content.replace(F("{PMsensor}"), F("pms")); // D1 D2
